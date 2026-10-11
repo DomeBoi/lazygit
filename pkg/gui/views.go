@@ -71,6 +71,7 @@ func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 		{viewPtr: &gui.Views.Suggestions, name: "suggestions"},
 		{viewPtr: &gui.Views.Confirmation, name: "confirmation"},
 		{viewPtr: &gui.Views.Prompt, name: "prompt"},
+		{viewPtr: &gui.Views.PromptFeedback, name: "promptFeedback"},
 		{viewPtr: &gui.Views.Tooltip, name: "tooltip"},
 
 		// this guy will cover everything else when it appears
@@ -132,6 +133,9 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Prompt.Wrap = false // We don't want wrapping in one-line prompts
 	gui.Views.Prompt.Editable = true
 	gui.Views.Prompt.Editor = gocui.EditorFunc(gui.promptEditor)
+	gui.Views.PromptFeedback.Visible = false
+	gui.Views.PromptFeedback.Wrap = true
+	gui.Views.PromptFeedback.ParentView = gui.Views.Prompt
 
 	gui.Views.Suggestions.Visible = false
 
@@ -216,6 +220,7 @@ func (gui *Gui) configureViewProperties() {
 	}
 
 	gui.Views.MenuFilterFrame.FrameRunes = frameRunesWithTopCorners(frameRunes, teeLeft, teeRight)
+	gui.Views.PromptFeedback.FrameRunes = frameRunesWithTopCorners(frameRunes, teeLeft, teeRight)
 
 	gui.c.SetViewContent(gui.Views.SearchPrefix, gui.c.Tr.SearchPrefix)
 

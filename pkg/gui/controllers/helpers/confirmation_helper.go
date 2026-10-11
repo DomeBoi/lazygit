@@ -51,6 +51,7 @@ func (self *ConfirmationHelper) wrappedPromptConfirmationFunction(
 	getResponse func() string,
 	allowEmptyInput bool,
 	preserveWhitespace bool,
+	validateInput func(string) error,
 ) func() error {
 	return func() error {
 		if self.c.GocuiGui().IsPasting {
@@ -71,6 +72,13 @@ func (self *ConfirmationHelper) wrappedPromptConfirmationFunction(
 			return nil
 		}
 
+		if validateInput != nil {
+			if err := validateInput(response); err != nil {
+				self.c.ErrorToast(err.Error())
+				return nil
+			}
+		}
+
 		return self.closeAndCallConfirmationFunction(cancel, func() error {
 			return function(response)
 		})
@@ -89,6 +97,7 @@ func (self *ConfirmationHelper) DeactivatePrompt() {
 	self.c.State().GetRepoState().SetCurrentPopupOpts(nil)
 
 	self.c.Views().Prompt.Visible = false
+	self.c.Views().PromptFeedback.Visible = false
 	self.c.Views().Suggestions.Visible = false
 
 	self.clearPromptViewKeyBindings()
@@ -262,7 +271,7 @@ func (self *ConfirmationHelper) setConfirmationKeyBindings(cancel goContext.Canc
 func (self *ConfirmationHelper) setPromptKeyBindings(cancel goContext.CancelFunc, opts types.CreatePopupPanelOpts) {
 	onConfirm := self.wrappedPromptConfirmationFunction(cancel, opts.HandleConfirmPrompt,
 		func() string { return self.c.Views().Prompt.TextArea.GetContent() },
-		opts.AllowEmptyInput, opts.PreserveWhitespace)
+		opts.AllowEmptyInput, opts.PreserveWhitespace, opts.ValidateInput)
 
 	onSuggestionConfirm := self.wrappedPromptConfirmationFunction(
 		cancel,
@@ -270,6 +279,7 @@ func (self *ConfirmationHelper) setPromptKeyBindings(cancel goContext.CancelFunc
 		self.getSelectedSuggestionValue,
 		opts.AllowEmptyInput,
 		opts.PreserveWhitespace,
+		opts.ValidateInput,
 	)
 
 	onClose := self.wrappedConfirmationFunction(cancel, opts.HandleClose)
@@ -450,6 +460,15 @@ func (self *ConfirmationHelper) resizeConfirmationPanel(parentPopupContext types
 }
 
 func (self *ConfirmationHelper) resizePromptPanel(parentPopupContext types.Context) {
+	feedbackView := self.c.Views().PromptFeedback
+	feedback := ""
+	opts := self.c.State().GetRepoState().GetCurrentPopupOpts()
+	if opts != nil && opts.GetFeedback != nil {
+		feedback = opts.GetFeedback(self.c.Views().Prompt.TextArea.GetContent())
+	}
+	feedbackView.Visible = feedback != ""
+	self.c.SetViewContent(feedbackView, feedback)
+
 	suggestionsViewHeight := 0
 	if self.c.Views().Suggestions.Visible {
 		suggestionsViewHeight = 11
@@ -458,12 +477,24 @@ func (self *ConfirmationHelper) resizePromptPanel(parentPopupContext types.Conte
 	contentWidth := panelWidth - 2 // minus 2 for the frame
 	promptView := self.c.Views().Prompt
 	prompt := promptView.TextArea.GetContent()
-	contentHeight := getMessageHeight(false, true, prompt, contentWidth, promptView.TabWidth) + suggestionsViewHeight
+	inputHeight := getMessageHeight(false, true, prompt, contentWidth, promptView.TabWidth)
+	feedbackHeight := 0
+	if feedbackView.Visible {
+		feedbackHeight = getMessageHeight(true, false, feedback, contentWidth, feedbackView.TabWidth) + 1
+		_, windowHeight := self.c.GocuiGui().Size()
+		feedbackHeight = min(feedbackHeight, max(0, windowHeight*3/4-2-inputHeight-suggestionsViewHeight))
+		feedbackView.Visible = feedbackHeight > 0
+	}
+	contentHeight := inputHeight + feedbackHeight + suggestionsViewHeight
 	x0, y0, x1, y1 := self.getPopupPanelDimensionsAux(contentWidth, contentHeight, parentPopupContext)
-	promptViewBottom := y1 - suggestionsViewHeight
+	promptViewBottom := y1 - suggestionsViewHeight - feedbackHeight
 	_, _ = self.c.GocuiGui().SetView(promptView.Name(), x0, y0, x1, promptViewBottom, 0)
 
-	suggestionsViewTop := promptViewBottom + 1
+	if feedbackView.Visible {
+		_, _ = self.c.GocuiGui().SetView(feedbackView.Name(), x0, promptViewBottom, x1, promptViewBottom+feedbackHeight, 0)
+	}
+
+	suggestionsViewTop := promptViewBottom + feedbackHeight + 1
 	_, _ = self.c.GocuiGui().SetView(self.c.Views().Suggestions.Name(), x0, suggestionsViewTop, x1, suggestionsViewTop+suggestionsViewHeight, 0)
 }
 

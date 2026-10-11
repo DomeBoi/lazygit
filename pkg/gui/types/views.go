@@ -22,6 +22,7 @@ type Views struct {
 	Options           *gocui.View
 	Confirmation      *gocui.View
 	Prompt            *gocui.View
+	PromptFeedback    *gocui.View
 	Menu              *gocui.View
 	MenuFilterFrame   *gocui.View
 	MenuFilter        *gocui.View

@@ -9,3 +9,4 @@
 * [Range Select](./Range_Select.md)
 * [Searching/Filtering](./Searching.md)
 * [Stacked Branches](./Stacked_Branches.md)
+* [Branch Names](./Branch_Names.md)

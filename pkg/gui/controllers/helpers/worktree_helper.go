@@ -60,6 +60,21 @@ func (self *WorktreeHelper) NewWorktree() error {
 	self.c.Prompt(types.PromptOpts{
 		Title:               self.c.Tr.NewWorktreeForBranchTitle,
 		FindSuggestionsFunc: self.suggestionsHelper.GetWorktreeBranchNameSuggestionsFunc(),
+		PreserveWhitespace:  true,
+		GetFeedback: func(input string) string {
+			branch, _, isRemote := self.worktreeBranchSelection(input)
+			if branch != nil || isRemote {
+				return ""
+			}
+			return self.refsHelper.branchNameFeedback(input, "")
+		},
+		ValidateInput: func(input string) error {
+			branch, _, isRemote := self.worktreeBranchSelection(input)
+			if branch != nil || isRemote {
+				return nil
+			}
+			return self.refsHelper.validateBranchName(input, "")
+		},
 		HandleConfirm: func(value string) error {
 			return self.newWorktreeForPickerValue(value)
 		},

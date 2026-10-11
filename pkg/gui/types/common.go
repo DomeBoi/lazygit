@@ -239,6 +239,8 @@ type CreatePopupPanelOpts struct {
 	AllowEditSuggestion bool
 	AllowEmptyInput     bool
 	PreserveWhitespace  bool
+	GetFeedback         func(string) string
+	ValidateInput       func(string) error
 }
 
 type ConfirmOpts struct {
@@ -259,6 +261,10 @@ type PromptOpts struct {
 	AllowEditSuggestion bool
 	AllowEmptyInput     bool
 	PreserveWhitespace  bool
+	// GetFeedback returns display-only feedback for the current input.
+	GetFeedback func(string) string
+	// ValidateInput runs before closing the prompt. An error keeps it open.
+	ValidateInput func(string) error
 	// CAPTURE THIS
 	HandleClose            func() error
 	HandleDeleteSuggestion func(int) error

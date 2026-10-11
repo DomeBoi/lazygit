@@ -701,7 +701,7 @@ func (self *BranchesController) createResetMenu(selectedBranch *models.Branch) e
 
 func (self *BranchesController) rename(branch *models.Branch) error {
 	promptForNewName := func() error {
-		self.c.Helpers().Refs.PromptForBranchName(types.PromptOpts{
+		self.c.Helpers().Refs.PromptForBranchRename(types.PromptOpts{
 			Title:          self.c.Tr.NewBranchNamePrompt + " " + branch.Name + ":",
 			InitialContent: branch.Name,
 			HandleConfirm: func(newBranchName string) error {

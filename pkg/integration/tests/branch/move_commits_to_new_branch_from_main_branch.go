@@ -38,8 +38,9 @@ var MoveCommitsToNewBranchFromMainBranch = NewIntegrationTest(NewIntegrationTest
 
 		t.ExpectPopup().Prompt().
 			Title(Equals("New branch name (branch is off of 'master')")).
-			Type("new branch").
-			Confirm()
+			Type("new branch")
+		t.Views().PromptFeedback().Content(Equals("Will be created as 'new-branch'."))
+		t.ExpectPopup().Prompt().Title(Contains("New branch name")).Confirm()
 
 		t.Views().Branches().
 			Lines(

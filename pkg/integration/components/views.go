@@ -118,6 +118,10 @@ func (self *Views) Prompt() *ViewDriver {
 	return self.regularView("prompt")
 }
 
+func (self *Views) PromptFeedback() *ViewDriver {
+	return self.regularView("promptFeedback")
+}
+
 func (self *Views) CommitMessage() *ViewDriver {
 	return self.regularView("commitMessage")
 }

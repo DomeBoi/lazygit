@@ -22,6 +22,10 @@ func NewBranchCommands(gitCommon *GitCommon) *BranchCommands {
 	}
 }
 
+func (self *BranchCommands) CheckName(name string) error {
+	return self.cmd.New(NewGitCmd("check-ref-format").Arg("--branch", name).ToArgv()).DontLog().Run()
+}
+
 // New creates a new branch
 func (self *BranchCommands) New(name string, base string) error {
 	cmdArgs := NewGitCmd("checkout").

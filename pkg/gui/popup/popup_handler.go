@@ -142,6 +142,8 @@ func (self *PopupHandler) Prompt(opts types.PromptOpts) {
 		AllowEditSuggestion:    opts.AllowEditSuggestion,
 		AllowEmptyInput:        opts.AllowEmptyInput,
 		PreserveWhitespace:     opts.PreserveWhitespace,
+		GetFeedback:            opts.GetFeedback,
+		ValidateInput:          opts.ValidateInput,
 		Mask:                   opts.Mask,
 	})
 }

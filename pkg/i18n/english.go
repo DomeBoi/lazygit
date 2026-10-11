@@ -117,6 +117,11 @@ type TranslationSet struct {
 	ForceCheckoutBranch                   string
 	BranchName                            string
 	NewBranchNameBranchOff                string
+	BranchNameWillBeCreatedAs             string
+	BranchNameWillBeRenamedTo             string
+	BranchNameCannotBeEmpty               string
+	BranchNameAlreadyExists               string
+	InvalidBranchName                     string
 	CantDeleteCheckOutBranch              string
 	DeleteBranchTitle                     string
 	DeleteBranchesTitle                   string
@@ -1306,6 +1311,11 @@ func EnglishTranslationSet() *TranslationSet {
 		ForceCheckoutBranch:                  "Force checkout branch",
 		BranchName:                           "Branch name",
 		NewBranchNameBranchOff:               "New branch name (branch is off of '{{.branchName}}')",
+		BranchNameWillBeCreatedAs:            "Will be created as '{{.branchName}}'.",
+		BranchNameWillBeRenamedTo:            "Will be renamed to '{{.branchName}}'.",
+		BranchNameCannotBeEmpty:              "The corrected branch name cannot be empty.",
+		BranchNameAlreadyExists:              "A branch named '{{.branchName}}' already exists.",
+		InvalidBranchName:                    "'{{.branchName}}' is not a valid branch name.",
 		CantDeleteCheckOutBranch:             "You cannot delete the checked out branch!",
 		DeleteBranchTitle:                    "Delete branch '{{.selectedBranchName}}'?",
 		DeleteBranchesTitle:                  "Delete selected branches?",

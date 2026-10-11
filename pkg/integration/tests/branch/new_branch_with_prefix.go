@@ -25,9 +25,11 @@ var NewBranchWithPrefix = NewIntegrationTest(NewIntegrationTestArgs{
 			SelectNextItem().
 			Press(keys.Universal.New).
 			Tap(func() {
-				branchName := "my-branch-name"
-				t.ExpectPopup().Prompt().Title(Contains("New branch name")).Type(branchName).Confirm()
-				t.Git().CurrentBranchName("myprefix/" + branchName)
+				t.ExpectPopup().Prompt().Title(Contains("New branch name")).
+					InitialText(Equals("myprefix/")).Type("my branch:name")
+				t.Views().PromptFeedback().Content(Equals("Will be created as 'myprefix/my-branch-name'."))
+				t.ExpectPopup().Prompt().Title(Contains("New branch name")).Confirm()
+				t.Git().CurrentBranchName("myprefix/my-branch-name")
 			})
 	},
 })

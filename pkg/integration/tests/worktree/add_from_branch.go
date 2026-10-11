@@ -30,8 +30,9 @@ var AddFromBranch = NewIntegrationTest(NewIntegrationTestArgs{
 
 				t.ExpectPopup().Prompt().
 					Title(Equals("New branch and worktree name")).
-					Type("newbranch").
-					Confirm()
+					Type("new branch")
+				t.Views().PromptFeedback().Content(Equals("Will be created as 'new-branch'."))
+				t.ExpectPopup().Prompt().Title(Equals("New branch and worktree name")).Confirm()
 
 				// no existing worktrees and no configured default path, so the
 				// only candidate location is the repo's parent directory; accept it
@@ -42,7 +43,7 @@ var AddFromBranch = NewIntegrationTest(NewIntegrationTestArgs{
 			// confirm we're still focused on the branches view
 			IsFocused().
 			Lines(
-				Contains("newbranch").IsSelected(),
+				Contains("new-branch").IsSelected(),
 				Contains("mybranch (worktree repo)"),
 			).
 			NavigateToLine(Contains("mybranch")).
@@ -57,7 +58,7 @@ var AddFromBranch = NewIntegrationTest(NewIntegrationTestArgs{
 				Contains("mybranch").IsSelected(),
 				// the worktree's directory name matches the branch name, so the
 				// branches view shows the compact "(worktree)" with no name
-				Contains("newbranch (worktree)"),
+				Contains("new-branch (worktree)"),
 			).
 			// Confirm the files view is still showing in the files window
 			Press(keys.Universal.PrevBlock)
