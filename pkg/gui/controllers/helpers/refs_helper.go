@@ -384,12 +384,12 @@ func (self *RefsHelper) NewBranch(from string, fromFormattedName string, suggest
 		})
 	}
 
-	self.c.Prompt(types.PromptOpts{
+	self.PromptForBranchName(types.PromptOpts{
 		Title:          message,
 		InitialContent: suggestedBranchName,
 		HandleConfirm: func(response string) error {
 			self.c.LogAction(self.c.Tr.Actions.CreateBranch)
-			newBranchName := SanitizedBranchName(response)
+			newBranchName := response
 			newBranchFunc := self.c.Git().Branch.New
 			if newBranchName != suggestedBranchName {
 				newBranchFunc = self.c.Git().Branch.NewWithoutTracking
@@ -459,12 +459,12 @@ func (self *RefsHelper) MoveCommitsToNewBranch() error {
 			return err
 		}
 
-		self.c.Prompt(types.PromptOpts{
+		self.PromptForBranchName(types.PromptOpts{
 			Title:          prompt,
 			InitialContent: suggestedBranchName,
 			HandleConfirm: func(response string) error {
 				self.c.LogAction(self.c.Tr.MoveCommitsToNewBranch)
-				newBranchName := SanitizedBranchName(response)
+				newBranchName := response
 				return self.c.WithWaitingStatus(self.c.Tr.MovingCommitsToNewBranchStatus, func(gocui.Task) error {
 					return f(newBranchName)
 				})
@@ -616,6 +616,14 @@ func (self *RefsHelper) CanMoveCommitsToNewBranch() *types.DisabledReason {
 	}
 
 	return nil
+}
+
+func (self *RefsHelper) PromptForBranchName(opts types.PromptOpts) {
+	onConfirm := opts.HandleConfirm
+	opts.HandleConfirm = func(response string) error {
+		return onConfirm(SanitizedBranchName(response))
+	}
+	self.c.Prompt(opts)
 }
 
 // SanitizedBranchName will remove all spaces in favor of a dash "-" to meet

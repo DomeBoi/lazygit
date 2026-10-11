@@ -302,11 +302,16 @@ func (self *WorktreeHelper) newLocalBranchAndWorktreeItem(remoteBranch *models.R
 // location, then create a worktree on a freshly created branch of that name.
 // locationPrompt builds the location-menu prompt once the name is known.
 func (self *WorktreeHelper) startNewBranchWorktree(nameInitialContent string, base string, locationPrompt func(name string) string) error {
-	return self.promptForName(self.c.Tr.NewBranchAndWorktreeName, nameInitialContent, func(name string) error {
-		return self.promptForWorktreeLocation(name, locationPrompt(name), func(path string) error {
-			return self.createWorktree(git_commands.NewWorktreeOpts{Path: path, Base: base, Branch: name}, context.LOCAL_BRANCHES_CONTEXT_KEY)
-		})
+	self.refsHelper.PromptForBranchName(types.PromptOpts{
+		Title:          self.c.Tr.NewBranchAndWorktreeName,
+		InitialContent: nameInitialContent,
+		HandleConfirm: func(name string) error {
+			return self.promptForWorktreeLocation(name, locationPrompt(name), func(path string) error {
+				return self.createWorktree(git_commands.NewWorktreeOpts{Path: path, Base: base, Branch: name}, context.LOCAL_BRANCHES_CONTEXT_KEY)
+			})
+		},
 	})
+	return nil
 }
 
 // worktreeForBranchItem is the "check out an existing branch in a new worktree"
@@ -369,7 +374,7 @@ func (self *WorktreeHelper) promptForName(title string, initialContent string, o
 		Title:          title,
 		InitialContent: initialContent,
 		HandleConfirm: func(response string) error {
-			return onConfirm(SanitizedBranchName(response))
+			return onConfirm(strings.ReplaceAll(response, " ", "-"))
 		},
 	})
 
