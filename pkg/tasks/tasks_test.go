@@ -132,14 +132,10 @@ func TestNewCmdTask(t *testing.T) {
 	}
 
 	fn := manager.NewCmdTask(start, func() string { return "prefix\n" }, LinesToRead{20, -1, nil}, onDone)
-	wg := sync.WaitGroup{}
-	wg.Go(func() {
-		time.Sleep(100 * time.Millisecond)
+	_ = fn(TaskOpts{Stop: stop, InitialContentLoaded: func() {
+		task.Done()
 		close(stop)
-	})
-	_ = fn(TaskOpts{Stop: stop, InitialContentLoaded: func() { task.Done() }})
-
-	wg.Wait()
+	}})
 
 	callCountExpectations := []struct {
 		expected int
@@ -770,14 +766,10 @@ func TestNewCmdTaskRefresh(t *testing.T) {
 		}
 
 		fn := manager.NewCmdTask(start, nil, s.linesToRead, func() {})
-		wg := sync.WaitGroup{}
-		wg.Go(func() {
-			time.Sleep(100 * time.Millisecond)
+		_ = fn(TaskOpts{Stop: stop, InitialContentLoaded: func() {
+			task.Done()
 			close(stop)
-		})
-		_ = fn(TaskOpts{Stop: stop, InitialContentLoaded: func() { task.Done() }})
-
-		wg.Wait()
+		}})
 
 		if !reflect.DeepEqual(lineCountsOnRefresh, s.expectedLineCountsOnRefresh) {
 			t.Errorf("%s: expected line counts on refresh: %v, got %v",
