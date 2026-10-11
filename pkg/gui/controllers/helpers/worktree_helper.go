@@ -77,9 +77,8 @@ func (self *WorktreeHelper) NewWorktree() error {
 // All three then feed the shared location menu. The picker filters out branches
 // already checked out somewhere, but a verbatim type-in is still guarded here.
 func (self *WorktreeHelper) newWorktreeForPickerValue(value string) error {
-	if branch, ok := lo.Find(self.c.Model().Branches, func(branch *models.Branch) bool {
-		return branch.Name == value
-	}); ok {
+	branch, branchName, isRemote := self.worktreeBranchSelection(value)
+	if branch != nil {
 		if worktree, ok := git_commands.WorktreeForBranch(branch, self.c.Model().Worktrees); ok {
 			return errors.New(utils.ResolvePlaceholderString(self.c.Tr.BranchCheckedOutByWorktree,
 				map[string]string{"branchName": branch.Name, "worktreeName": worktree.Name}))
@@ -92,7 +91,7 @@ func (self *WorktreeHelper) newWorktreeForPickerValue(value string) error {
 		})
 	}
 
-	if _, branchName, ok := self.refsHelper.ParseRemoteBranchName(value); ok {
+	if isRemote {
 		prompt := utils.ResolvePlaceholderString(self.c.Tr.WorktreeLocationPromptTrackingBranch,
 			map[string]string{"name": branchName, "ref": value})
 		return self.promptForWorktreeLocation(branchName, prompt, func(path string) error {
@@ -107,6 +106,14 @@ func (self *WorktreeHelper) newWorktreeForPickerValue(value string) error {
 	return self.promptForWorktreeLocation(name, prompt, func(path string) error {
 		return self.createWorktree(git_commands.NewWorktreeOpts{Path: path, Base: base, Branch: name}, context.WORKTREES_CONTEXT_KEY)
 	})
+}
+
+func (self *WorktreeHelper) worktreeBranchSelection(value string) (*models.Branch, string, bool) {
+	if branch, ok := lo.Find(self.c.Model().Branches, func(branch *models.Branch) bool { return branch.Name == value }); ok {
+		return branch, "", false
+	}
+	_, name, isRemote := self.refsHelper.ParseRemoteBranchName(value)
+	return nil, name, isRemote
 }
 
 func (self *WorktreeHelper) Switch(worktree *models.Worktree, contextKey types.ContextKey) error {
